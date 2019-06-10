@@ -1,4 +1,4 @@
-// Magic Wheelchair - Tie Silencer 
+// Magic Wheelchair - Guardians of the Galaxy Milano
 //
 // reference: 
 // IMPORTANT NOTE: 8.3 FILENAMES FOR WAV AUDIO FILES!
@@ -6,6 +6,17 @@
 
 //you can use the serial input with keys 1-9 to toggle
 //key 0 will turn them all off so we don't use 0 here
+
+//todo: 
+//Switch BGM toggle to advance track vs random
+//Drop SFX / Music for voice
+//Fix startup sound
+//Add button setup back once we have GPIO wired
+//add some nature of engine rumble / idle sound
+
+
+
+
 
 bool debugOptions[10] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0};   //change default here, helpful for startup debugging
 
@@ -30,15 +41,15 @@ const char *debugOptionsText[10] =  {"", "Input","Audio", "Action", "Peak Audio"
 #include "NButton.h"
 
 #define NUM_BUTTONS 4
-uint8_t buttonPins[NUM_BUTTONS] = { 0, 1, 2, 3 };
+uint8_t buttonPins[NUM_BUTTONS] = { 35, 36, 37, 38 };
 NButton buttons[NUM_BUTTONS] = { {0, buttonPins[0], true, true}, {1, buttonPins[1], true, true}, 
                                  {2, buttonPins[2], true, true}, {3, buttonPins[3], true, true} };
 int buttonDebounce[NUM_BUTTONS] = {250, 100, 1000, 1000};
     
-#define BUTTON_LIGHT_TORPEDO  38
-#define BUTTON_LIGHT_LASER    37
-#define BUTTON_LIGHT_SPEECH   36
-#define BUTTON_LIGHT_ENGINE   35
+#define BUTTON_LIGHT_TORPEDO  2
+#define BUTTON_LIGHT_LASER    5
+#define BUTTON_LIGHT_SPEECH   29
+#define BUTTON_LIGHT_ENGINE   30
 
 uint8_t buttonLightPins[NUM_BUTTONS] = { BUTTON_LIGHT_TORPEDO, BUTTON_LIGHT_LASER,
                                          BUTTON_LIGHT_SPEECH, BUTTON_LIGHT_ENGINE };
@@ -102,7 +113,7 @@ AudioControlSGTL5000     sgtl5000_1;     //xy=106,55
 #define CHANNEL_SPEECH     2     
 #define CHANNEL_WEAPON     2
 
-#define LEVEL_CHANNEL0    .3    //change these for relative channel levels
+#define LEVEL_CHANNEL0    .1    //change these for relative channel levels
 #define LEVEL_CHANNEL1    .3
 #define LEVEL_CHANNEL2    .8  
 
@@ -116,11 +127,12 @@ String playQueue[NUM_CHANNELS];
 
 AudioAnalyzePeak  *peakAnalyzers[NUM_CHANNELS] = { &peak1, &peak2, &peak3 };
 
-#define NUM_BGM_WAVS        6  //plays random file //set to 3 for KYLO specific
-#define NUM_LASER_WAVS      7  //plays random file
-#define NUM_TORPEDO_WAVS    4  //plays random file
-#define NUM_ENGINE_WAVS     2  //plays 0 all the time, then 1 when button pressed
-#define NUM_KYLO_WAVS       9  //plays random
+#define NUM_BGM_WAVS          12    //format BCKGND#.WAV
+#define NUM_WEAPONA_WAVS      3     //format WPNA#.WAV
+#define NUM_WEAPONB_WAVS      3     //format WPNB#.WAV
+#define NUM_ENGINE_WAVS       16    //format ENGINE#.WAV
+#define NUM_VOICE_WAVS        4     //format VOICE#.WAV
+#define NUM_STARTUP_WAVS      2     //format START#.WAV
 
 //LED ALL THE THINGS!
 #include <WS2812Serial.h>
@@ -160,7 +172,7 @@ Metro playQueueMetro = Metro(50);
 Metro animationMetro = Metro(17); //approx 60 frames per second
 
 
-bool bgmStatus = 1;           //0 = BGM off; 1 = BGM on
+bool bgmStatus = 0;           //0 = BGM off; 1 = BGM on
 bool engineStatus = 1;        //0 = Engine off; 1 = Engine on
 
 //for USB host functions
@@ -297,7 +309,7 @@ void setup() {
   //seed random function
   randomSeed(analogRead(0));
 
-  //setup buttons & button light
+   //setup buttons & button light
   for (int btn = 0; btn< NUM_BUTTONS; btn++) {
     //pinMode(buttonPins[btn], INPUT_PULLUP);
     pinMode(buttonLightPins[btn], OUTPUT);  
@@ -308,7 +320,7 @@ void setup() {
     buttons[btn].attachLongPressStop(buttonLongPressStop);
     buttons[btn].attachDuringLongPress(buttonLongPress);
   }
-
+ 
   //startup button light animation
   int btnDelay = 50;
   int absBtn = 0;
@@ -349,7 +361,7 @@ void setup() {
   delay(1000);
   Serial.println("Setup Complete.");
   printDebugOptions();
-  actionKylo();
+  actionStartup();
 }
 
 void loop() {
@@ -364,8 +376,8 @@ void loop() {
       //check on background music
       if (bgmStatus && !channels[CHANNEL_MUSIC]->isPlaying()) { 
         
-        //play random BACKGND#.WAV
-        String fn = "BACKGND";
+        //play random BCKGND#.WAV
+        String fn = "BCKGND";
         fn = fn + random (1, NUM_BGM_WAVS + 1) + ".WAV";
         if (debugOptions[DEBUG_AUDIO]){
           Serial.println("Starting Background Music from bgmMetro");
@@ -373,6 +385,7 @@ void loop() {
         playWAV( CHANNEL_MUSIC, fn);
 
       }
+      /* not playing engine all the time for milano
       //check on engine
       if (!channels[CHANNEL_ENGINE]->isPlaying()) {
         //We want ENGINE1.WAV (baseline engine) playing whenever ENGINE2.WAV (thrust) is NOT playing
@@ -381,6 +394,7 @@ void loop() {
       }
         playWAV(CHANNEL_ENGINE, "ENGINE1.WAV");
       }
+      */
       
    } //end bgmMetro check
 
@@ -397,7 +411,6 @@ void loop() {
   if (animationMetro.check() == 1) { // check if the metro has passed its interval
     //engine animation
 
-  
     if (peakAnalyzers[CHANNEL_ENGINE]->available()) {
       float peak = peakAnalyzers[CHANNEL_ENGINE]->read();
       if (debugOptions[DEBUG_PEAK]) Serial.printf("Engine Peak: %f \n", peak);
@@ -405,7 +418,7 @@ void loop() {
       fill_solid(engineLEDS, ENGINE_NUM_LEDS, CRGB(peakbrt,0,0));
       analogWrite(BUTTON_LIGHT_ENGINE, peakbrt);     
     }
-    else fill_solid(engineLEDS, ENGINE_NUM_LEDS, CRGB(255,0,0));
+    else fill_solid(engineLEDS, ENGINE_NUM_LEDS, CRGB(random(16,24),0,0));
 
     //if weapons sounds are playing, then peak the appropriate button
     if (channels[CHANNEL_WEAPON]->isPlaying() ) {
@@ -460,8 +473,7 @@ void processAction (int action, int src, int key, int data) {
    
       case ACTION_TORPEDO:                actionTorpedo();          break;
       case ACTION_LASER:                  actionLaser();            break;                                                                         
-      case ACTION_KYLO:                   actionKylo();             break;                                  
-      case ACTION_JARJAR:                 actionJarJar();           break;      
+      case ACTION_KYLO:                   actionKylo();             break;                                        
       case ACTION_ENGINE:                 actionEngine();           break;
       case ACTION_ENGINE_TOGGLE:          actionEngineToggle();     break;
       case ACTION_BGM_TOGGLE:             actionBGMToggle();        break;
@@ -492,8 +504,8 @@ void actionTorpedo() {
   if (debugOptions[DEBUG_ACTION]) Serial.println("Torpedo away!");
 
   //play random TORPEDO#.WAV
-  String fn = "TORPEDO";
-  fn = fn + random (1, NUM_TORPEDO_WAVS + 1) + ".WAV";
+  String fn = "WPNB";
+  fn = fn + random (1, NUM_WEAPONB_WAVS + 1) + ".WAV";
   queueWAV( CHANNEL_WEAPON, fn);
 
   //torpedo LED animation
@@ -517,8 +529,8 @@ void actionLaser() {
   //laser LED animation
 
   //play random LASER#.WAV
-  String fn = "LASER";
-  fn = fn + random (1, NUM_LASER_WAVS + 1) + ".WAV";
+  String fn = "WPNA";
+  fn = fn + random (1, NUM_WEAPONA_WAVS + 1) + ".WAV";
   queueWAV( CHANNEL_WEAPON, fn);
   torpedoFrame=9999;
   laserFrame=0; 
@@ -528,15 +540,20 @@ void actionKylo() {
   if (debugOptions[DEBUG_ACTION]) Serial.println("Kylo was here!");
 
     //play random KYLO#.WAV
-    String fn = "KYLO";
-    fn = fn + random (1, NUM_KYLO_WAVS + 1) + ".WAV";
+    String fn = "VOICE";
+    fn = fn + random (1, NUM_VOICE_WAVS + 1) + ".WAV";
     queueWAV( CHANNEL_SPEECH, fn);
 }
 
-void actionJarJar () {
-  if (debugOptions[DEBUG_ACTION]) Serial.println("EXQUEEEZE ME!");
-  queueWAV( CHANNEL_SPEECH, "JARJAR.WAV");
+void actionStartup() {
+  if (debugOptions[DEBUG_ACTION]) Serial.println("Starting up!");
+
+    //play random STARTUP#.WAV
+    String fn = "START";
+    fn = fn + random (1, NUM_STARTUP_WAVS + 1) + ".WAV";
+    queueWAV( CHANNEL_SPEECH, fn);
 }
+
 
 void actionEngine() {
   if (debugOptions[DEBUG_ACTION]) Serial.println("There is no sound in space, but let's make some anyway!");
@@ -545,8 +562,13 @@ void actionEngine() {
    
   mixer1.gain(CHANNEL_ENGINE, LEVEL_CHANNEL1);
   mixer2.gain(CHANNEL_ENGINE, LEVEL_CHANNEL1);
+
+  //play random ENGINE#.WAV
+    String fn = "ENGINE";
+    fn = fn + random (1, NUM_ENGINE_WAVS + 1) + ".WAV";
+    queueWAV( CHANNEL_ENGINE, fn);
   
-  queueWAV(CHANNEL_ENGINE, "ENGINE2.WAV");
+//  queueWAV(CHANNEL_ENGINE, "PASSBY10.WAV");
 
 }
 
