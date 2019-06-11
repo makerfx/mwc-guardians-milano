@@ -1,21 +1,34 @@
 // Magic Wheelchair - Guardians of the Galaxy Milano
 //
+// IMPORTANT - USE A NO-POWER USB CABLE IF THE TEENSY IS EXTERNALLY POWERED!
+//
 // reference: 
 // IMPORTANT NOTE: 8.3 FILENAMES FOR WAV AUDIO FILES!
 // IMPORTANT NOTE: WAV 44100 STEREO 16BIT
+//
 
-//you can use the serial input with keys 1-9 to toggle
-//key 0 will turn them all off so we don't use 0 here
+// DEBUGGING
+// you can use the serial input with keys 1-9 to toggle
+// key 0 will turn them all off so we don't use 0 here
 
 //todo: 
-//Switch BGM toggle to advance track vs random
-//Drop SFX / Music for voice
-//Fix startup sound
-//Add button setup back once we have GPIO wired
-//add some nature of engine rumble / idle sound
+// Make buttons be ENGINE + WEAPON + VOICE + MUSIC (Instead of two weapons?)
+// ENGINE: ActionBoost; Turn off Idle sounds
+// WEAPON: Fire: ?
+// VOICE:  Random: I am Groot
+// MUSIC:  Next track: Stop
 
-
-
+// Switch BGM toggle to advance track vs random
+// Drop SFX / Music / Engine for voice
+// Add more texture to startup? Maybe the sound then a specific voice clip?
+// add some nature of engine rumble / idle sound
+// swap LASER -> WEAPONA
+// swap TORPEDO -> WEAPONB 
+// swap KYLO -> VOICE
+// add an easter egg, maybe random I AM GROOT?
+// Remove the "torpedo charge" concept - does not apply here 
+// make engine LEDs "breathe" when no audio (have the engine button follow?)
+// create weapon animation
 
 
 bool debugOptions[10] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0};   //change default here, helpful for startup debugging
