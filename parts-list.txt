@@ -1,0 +1,34 @@
+Main Controller
+- Magic Wheelchair "Motherboard" v.9 from MakerFX / 2-Pi Labs
+- Teensy 3.6 ($30): https://www.pjrc.com/store/teensy36.html (also available on amazon)
+- Teensy Audio board ($14): https://www.pjrc.com/store/teensy3_audio.html
+- Header pins for protoboards ($13 kit): https://smile.amazon.com/gp/product/B07CWSXY7P/
+- Ground Loop isolator (for audio input) ($8): https://smile.amazon.com/gp/product/B01JUOWB2Q/
+- 3.5mm Headphone cable ($X): 
+- AMP ($X): 
+- 12v -> 5v Power Regulator ($X)
+- BlackWeb USB Presentation Remote ($22): https://www.walmart.com/ip/BlackWeb-2-4GHz-Wireless-Presenter-82-ft-Range/720596584
+- USB Host Cable for Teensy ($8 for 2): https://www.amazon.com/gp/product/B06Y5M6JTV
+- Main power switch: ?
+- LED extension cable - 18 gauge 4 conductor: https://smile.amazon.com/gp/product/B0154H7BLE
+- LED extension cable - (3 conductor)
+
+Power
+- 12v7 SLA Battery
+- SLA Charger
+- XT Connectors
+- Cable
+- Fuse 
+
+Case
+- Harbor Freight 11-1/2 X 7-1/2 X 4-1/2 Aluminum Case ($14): https://www.harborfreight.com/11-12-x-7-12-x-4-12-aluminum-case-69316.html
+- Giant Illuminated Arcade Buttons ($XX):
+- Scrap of Cat5 Cable ($FREE)
+- Scrap USB 4-conductor cable ($FREE)
+
+LEDs
+- 96 LED Concentric Rings($XX): 
+- WS2812 Weatherproof Strip LEDs ($XX): 
+
+Speakers
+- ???
