@@ -13,10 +13,14 @@
 
 //todo: 
 // Make buttons be ENGINE + WEAPON + VOICE + MUSIC (Instead of two weapons?)
-// ENGINE: ActionBoost; Turn off Idle sounds
-// WEAPON: Fire: ?
-// VOICE:  Random: I am Groot
-// MUSIC:  Next track: Stop
+
+
+// RED      ENGINE    ActionBoost   Turn off Idle sounds
+// GREEN    WEAPON    Fire          ?
+// YELLOW   SPEECH    Random        I am Groot
+// BLUE     MUSIC     Next track    Stop
+
+// note that speech & weapon share an audio channel
 
 // Switch BGM toggle to advance track vs random
 // Drop SFX / Music / Engine for voice
