@@ -145,8 +145,11 @@ AudioAnalyzePeak  *peakAnalyzers[NUM_CHANNELS] = { &peak1, &peak2, &peak3 };
 #define NUM_WEAPONA_WAVS      3     //format WPNA#.WAV
 #define NUM_WEAPONB_WAVS      3     //format WPNB#.WAV
 #define NUM_ENGINE_WAVS       16    //format ENGINE#.WAV
+#define NUM_IDLE_WAVS         2     //format IDLE#.WAV
 #define NUM_VOICE_WAVS        4     //format VOICE#.WAV
 #define NUM_STARTUP_WAVS      2     //format START#.WAV
+
+
 
 
 //LED ALL THE THINGS!
@@ -188,8 +191,8 @@ Metro animationMetro = Metro(17); //approx 60 frames per second
 
 
 bool bgmStatus = 0;           //0 = BGM off; 1 = BGM on
-bool engineStatus = 1;        //0 = Engine off; 1 = Engine on
-int bgmTrack = 0;             //Starting track (requires N-1) for background music 
+bool idleStatus = 1;        //0 = Engine off; 1 = Engine on
+int   bgmTrack = 0;             //Starting track (requires N-1) for background music 
 
 //for USB host functions
 #include "USBHost_t36.h"
@@ -218,7 +221,7 @@ KeyboardController keyboard1(myusb);
 #define ACTION_ENGINE                4
 #define ACTION_BGM_TOGGLE            5          //BGM = BACKGROUND MUSIC
 #define ACTION_BGM_NEXT              6
-#define ACTION_ENGINE_TOGGLE         7
+#define ACTION_IDLE_TOGGLE           7
 #define ACTION_TORPEDO_CHARGE_START  8
 #define ACTION_TORPEDO_CHARGE_DURING 9
 #define ACTION_TORPEDO_CHARGE_STOP   10
@@ -269,7 +272,7 @@ int ActionMap[][3] = {
   {SOURCE_BUTTON, 2, ACTION_ENGINE},             //red button
   {SOURCE_BTN_DBLCLICK, 2, ACTION_ENGINE},                        
   {SOURCE_BTN_LONGPRESS_DURING, 2, ACTION_FLASH_BUTTON}, 
-  {SOURCE_BTN_LONGPRESS_STOP, 2, ACTION_ENGINE_TOGGLE},            
+  {SOURCE_BTN_LONGPRESS_STOP, 2, ACTION_IDLE_TOGGLE},            
   
    
 }; //if you change this, don't forget to update the ACTION_MAP_SIZE
@@ -413,16 +416,19 @@ void loop() {
         playWAV( CHANNEL_MUSIC, fn);
 
       }
-      /* not playing engine all the time for milano
-      //check on engine
+      
+      //todo: move this to its own metro
+      //check on idle
       if (!channels[CHANNEL_ENGINE]->isPlaying()) {
-        //We want ENGINE1.WAV (baseline engine) playing whenever ENGINE2.WAV (thrust) is NOT playing
+        
       if (debugOptions[DEBUG_AUDIO]) {
-        Serial.println("Starting Background Engine Sound from bgmMetro");
+        Serial.println("Starting Background Idle Sound from bgmMetro");
       }
-        playWAV(CHANNEL_ENGINE, "ENGINE1.WAV");
+        String fn = "IDLE";
+        fn = fn + random (1, NUM_IDLE_WAVS + 1) + ".WAV";
+        playWAV(CHANNEL_ENGINE, fn);
       }
-      */
+      
       
    } //end bgmMetro check
 
@@ -511,7 +517,7 @@ void processAction (int action, int src, int key, int data) {
       case ACTION_WEAPONA:                actionWeaponA();            break;                                                                         
       case ACTION_SPEECH:                 actionSpeech();             break;                                        
       case ACTION_ENGINE:                 actionEngine();           break;
-      case ACTION_ENGINE_TOGGLE:          actionEngineToggle();     break;
+      case ACTION_IDLE_TOGGLE:            actionIdleToggle();     break;
       case ACTION_BGM_TOGGLE:             actionBGMToggle();        break;
       case ACTION_BGM_NEXT:               actionBGMNext();        break;
       
@@ -603,18 +609,18 @@ void actionEngine() {
 }
 
 /*
- * actionEngineToggle() is used to toggle the status of Engine constant sound
+ * actionidleToggle() is used to toggle the status of idle constant sound
  * and will stop if the status is now off
- * Note that there is a metro that watches for Engine sound to finish and restarts, 
+ * Note that there is a metro that watches for idle sound to finish and restarts, 
  * so we will let that metro start the sound once we change the status
  * 
  */
-void actionEngineToggle () {
-    engineStatus = !engineStatus;
+void actionIdleToggle () {
+    idleStatus = !idleStatus;
 
-  if (debugOptions[DEBUG_ACTION]) Serial.printf("Background Engine status = %s\n", engineStatus?"HIGH":"LOW");
+  if (debugOptions[DEBUG_ACTION]) Serial.printf("Background Idle status = %s\n", idleStatus?"HIGH":"LOW");
 
-  if (engineStatus) {
+  if (idleStatus) {
       mixer1.gain(CHANNEL_ENGINE, LEVEL_CHANNEL1);
       mixer2.gain(CHANNEL_ENGINE, LEVEL_CHANNEL1);
   }
