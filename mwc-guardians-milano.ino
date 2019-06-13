@@ -242,7 +242,7 @@ unsigned long lastActionTime[MAX_ACTION_ID];
  * 
  */
 
-#define ACTION_MAP_SIZE 22
+#define ACTION_MAP_SIZE 18
 
 int ActionMap[][3] = {
   //src, key, action
@@ -346,23 +346,7 @@ void setup() {
   String fn = "START";
   fn = fn + random (1, NUM_STARTUP_WAVS + 1) + ".WAV";
   playWAV( CHANNEL_MUSIC, fn);
-/*  
-  //startup button light animation
-  int btnDelay = 200;
-  int absBtn = 0;
-  int numCycles = 10;
-  for (int cycle = 0; cycle < numCycles; cycle++) { 
-    for (int btn = 0; btn< NUM_BUTTONS; btn++) { 
-      btnDelay = btnDelay - absBtn;
-      if (btnDelay <0) btnDelay=0;
-      digitalWrite(buttonLightPins[btn], HIGH);
-      delay(btnDelay);  
-      digitalWrite(buttonLightPins[btn], LOW);
-      delay(btnDelay); 
-      absBtn++;
-    }
-  }
-*/
+
  //startup button light animation
   int btnDelay = 200;
   int absBtn = 0;
@@ -379,11 +363,7 @@ void setup() {
       delay(btnDelay); 
       absBtn++;
     } 
-    //keep the animation going if the startup sound isn't done yet
-    //if ((cycle == numCycles-1) && (channels[CHANNEL_MUSIC]->isPlaying())) numCycles--;
   } while (channels[CHANNEL_MUSIC]->isPlaying());
-
-
 
   //Setup LEDS
   
