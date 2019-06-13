@@ -11,10 +11,7 @@
 // you can use the serial input with keys 1-9 to toggle
 // key 0 will turn them all off so we don't use 0 here
 
-//todo: 
-// Make buttons be ENGINE + WEAPON + VOICE + MUSIC (Instead of two weapons?)
-
-
+// BUTTON FUNCTIONS FOR MILANO
 // RED      ENGINE    ActionBoost   Turn off Idle sounds
 // GREEN    WEAPON    Fire          ?
 // YELLOW   SPEECH    Random        I am Groot
@@ -28,7 +25,6 @@
 // Add more texture to startup? Maybe the sound then a specific voice clip?
 // add an easter egg, maybe random I AM GROOT?
 // Remove the "torpedo charge" concept - does not apply here 
-// make engine LEDs "breathe" when no audio (have the engine button follow?)
 
 
 bool debugOptions[10] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0};   //change default here, helpful for startup debugging
