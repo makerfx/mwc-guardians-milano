@@ -338,7 +338,15 @@ void setup() {
     buttons[btn].attachLongPressStop(buttonLongPressStop);
     buttons[btn].attachDuringLongPress(buttonLongPress);
   }
- 
+
+
+  Serial.println("Starting up!");
+
+  //play random STARTUP#.WAV
+  String fn = "START";
+  fn = fn + random (1, NUM_STARTUP_WAVS + 1) + ".WAV";
+  playWAV( CHANNEL_MUSIC, fn);
+/*  
   //startup button light animation
   int btnDelay = 200;
   int absBtn = 0;
@@ -354,6 +362,27 @@ void setup() {
       absBtn++;
     }
   }
+*/
+ //startup button light animation
+  int btnDelay = 200;
+  int absBtn = 0;
+  //int numCycles = 10;
+  //for (int cycle = 0; cycle < numCycles; cycle++) { 
+  
+  do {
+    for (int btn = 0; btn< NUM_BUTTONS; btn++) { 
+      btnDelay = btnDelay - absBtn;
+      if (btnDelay <0) btnDelay=0;
+      digitalWrite(buttonLightPins[btn], HIGH);
+      delay(btnDelay);  
+      digitalWrite(buttonLightPins[btn], LOW);
+      delay(btnDelay); 
+      absBtn++;
+    } 
+    //keep the animation going if the startup sound isn't done yet
+    //if ((cycle == numCycles-1) && (channels[CHANNEL_MUSIC]->isPlaying())) numCycles--;
+  } while (channels[CHANNEL_MUSIC]->isPlaying());
+
 
 
   //Setup LEDS
@@ -379,7 +408,7 @@ void setup() {
   delay(1000);
   Serial.println("Setup Complete.");
   printDebugOptions();
-  actionStartup();
+ 
 }
 
 void loop() {
@@ -571,15 +600,6 @@ void actionSpeech() {
     //play random SPEECH#.WAV
     String fn = "VOICE";
     fn = fn + random (1, NUM_VOICE_WAVS + 1) + ".WAV";
-    queueWAV( CHANNEL_SPEECH, fn);
-}
-
-void actionStartup() {
-  if (debugOptions[DEBUG_ACTION]) Serial.println("Starting up!");
-
-    //play random STARTUP#.WAV
-    String fn = "START";
-    fn = fn + random (1, NUM_STARTUP_WAVS + 1) + ".WAV";
     queueWAV( CHANNEL_SPEECH, fn);
 }
 
