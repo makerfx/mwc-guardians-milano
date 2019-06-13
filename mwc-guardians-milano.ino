@@ -63,13 +63,13 @@ NButton buttons[NUM_BUTTONS] = { {0, buttonPins[0], true, true}, {1, buttonPins[
                                  {2, buttonPins[2], true, true}, {3, buttonPins[3], true, true} };
 int buttonDebounce[NUM_BUTTONS] = {250, 100, 1000, 1000};
     
-#define BUTTON_LIGHT_MUSIC  2
-#define BUTTON_LIGHT_WEAPONA    5
+#define BUTTON_LIGHT_MUSIC    2
+#define BUTTON_LIGHT_WEAPONA  5
 #define BUTTON_LIGHT_SPEECH   29
 #define BUTTON_LIGHT_ENGINE   30
 
 uint8_t buttonLightPins[NUM_BUTTONS] = { BUTTON_LIGHT_MUSIC, BUTTON_LIGHT_WEAPONA,
-                                         BUTTON_LIGHT_SPEECH, BUTTON_LIGHT_ENGINE };
+                                         BUTTON_LIGHT_ENGINE, BUTTON_LIGHT_SPEECH  };
 
 int keyHeld = 0;
 unsigned long keyHeldDuration = 0;
