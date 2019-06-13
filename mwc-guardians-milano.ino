@@ -151,6 +151,7 @@ AudioAnalyzePeak  *peakAnalyzers[NUM_CHANNELS] = { &peak1, &peak2, &peak3 };
 #define NUM_VOICE_WAVS        4     //format VOICE#.WAV
 #define NUM_STARTUP_WAVS      2     //format START#.WAV
 
+
 //LED ALL THE THINGS!
 #include <WS2812Serial.h>
 #define USE_WS2812SERIAL
@@ -191,6 +192,7 @@ Metro animationMetro = Metro(17); //approx 60 frames per second
 
 bool bgmStatus = 0;           //0 = BGM off; 1 = BGM on
 bool engineStatus = 1;        //0 = Engine off; 1 = Engine on
+int bgmTrack = 0;             //Starting track (requires N-1) for background music 
 
 //for USB host functions
 #include "USBHost_t36.h"
@@ -402,10 +404,12 @@ void loop() {
    if (bgmMetro.check() == 1) { // check if the metro has passed its interval 
       //check on background music
       if (bgmStatus && !channels[CHANNEL_MUSIC]->isPlaying()) { 
+
+        bgmTrack++;
+        if (bgmTrack > NUM_BGM_WAVS) bgmTrack = 1;
         
-        //play random BCKGND#.WAV
         String fn = "BCKGND";
-        fn = fn + random (1, NUM_BGM_WAVS + 1) + ".WAV";
+        fn = fn + bgmTrack + ".WAV";
         if (debugOptions[DEBUG_AUDIO]){
           Serial.println("Starting Background Music from bgmMetro");
         }
