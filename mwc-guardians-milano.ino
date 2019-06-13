@@ -19,20 +19,17 @@
 // GREEN    WEAPON    Fire          ?
 // YELLOW   SPEECH    Random        I am Groot
 // BLUE     MUSIC     Next track    Stop
-
 // note that speech & weapon share an audio channel
 
-// Switch BGM toggle to advance track vs random
+
+//TODO 
+// create weapon animation
 // Drop SFX / Music / Engine for voice
 // Add more texture to startup? Maybe the sound then a specific voice clip?
 // add some nature of engine rumble / idle sound
-// swap LASER -> WEAPONA
-// swap TORPEDO -> WEAPONB 
-// swap KYLO -> VOICE
 // add an easter egg, maybe random I AM GROOT?
 // Remove the "torpedo charge" concept - does not apply here 
 // make engine LEDs "breathe" when no audio (have the engine button follow?)
-// create weapon animation
 
 
 bool debugOptions[10] = {0, 0, 0, 1, 0, 0, 0, 0, 0, 0};   //change default here, helpful for startup debugging
@@ -58,7 +55,7 @@ const char *debugOptionsText[10] =  {"", "Input","Audio", "Action", "Peak Audio"
 #include "NButton.h"
 
 #define NUM_BUTTONS 4
-uint8_t buttonPins[NUM_BUTTONS] = { 35, 36, 37, 38 };
+uint8_t buttonPins[NUM_BUTTONS] = { 35, 36, 38, 37 };
 NButton buttons[NUM_BUTTONS] = { {0, buttonPins[0], true, true}, {1, buttonPins[1], true, true}, 
                                  {2, buttonPins[2], true, true}, {3, buttonPins[3], true, true} };
 int buttonDebounce[NUM_BUTTONS] = {250, 100, 1000, 1000};
@@ -264,15 +261,15 @@ int ActionMap[][3] = {
   //{SOURCE_BTN_LONGPRESS_DURING, 1, ACTION_FLASH_BUTTON},            
   //{SOURCE_BTN_LONGPRESS_STOP, 1, ACTION_WEAPONB},
   
-  {SOURCE_BUTTON, 2, ACTION_SPEECH},               //yellow button
-  {SOURCE_BTN_DBLCLICK, 2, ACTION_SPEECH},               
-  {SOURCE_BTN_LONGPRESS_DURING, 2, ACTION_FLASH_BUTTON},            
-  {SOURCE_BTN_LONGPRESS_STOP, 2, ACTION_JARJAR},            
+  {SOURCE_BUTTON, 3, ACTION_SPEECH},               //yellow button
+  {SOURCE_BTN_DBLCLICK, 3, ACTION_SPEECH},               
+  {SOURCE_BTN_LONGPRESS_DURING, 3, ACTION_FLASH_BUTTON},            
+  {SOURCE_BTN_LONGPRESS_STOP, 3, ACTION_JARJAR},            
   
-  {SOURCE_BUTTON, 3, ACTION_ENGINE},             //red button
-  {SOURCE_BTN_DBLCLICK, 3, ACTION_ENGINE},                        
-  {SOURCE_BTN_LONGPRESS_DURING, 3, ACTION_FLASH_BUTTON}, 
-  {SOURCE_BTN_LONGPRESS_STOP, 3, ACTION_ENGINE_TOGGLE},            
+  {SOURCE_BUTTON, 2, ACTION_ENGINE},             //red button
+  {SOURCE_BTN_DBLCLICK, 2, ACTION_ENGINE},                        
+  {SOURCE_BTN_LONGPRESS_DURING, 2, ACTION_FLASH_BUTTON}, 
+  {SOURCE_BTN_LONGPRESS_STOP, 2, ACTION_ENGINE_TOGGLE},            
   
    
 }; //if you change this, don't forget to update the ACTION_MAP_SIZE
