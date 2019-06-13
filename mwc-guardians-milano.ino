@@ -397,6 +397,19 @@ void loop() {
   myusb.Task();
 
    if (bgmMetro.check() == 1) { // check if the metro has passed its interval 
+      
+      //set background music low while voice is playing
+       if (channels[CHANNEL_SPEECH]->isPlaying()) { 
+          mixer1.gain(CHANNEL_MUSIC, 0);
+          mixer2.gain(CHANNEL_MUSIC, 0);
+          //if (debugOptions[DEBUG_AUDIO]) Serial.println("Decreasing Background Music level from bgmMetro");
+        }
+        else { 
+          mixer1.gain(CHANNEL_MUSIC, LEVEL_CHANNEL0);
+          mixer2.gain(CHANNEL_MUSIC, LEVEL_CHANNEL0);
+          //if (debugOptions[DEBUG_AUDIO]) Serial.println("Increasing Background Music level from bgmMetro");
+        }
+    
       //check on background music
       if (bgmStatus && !channels[CHANNEL_MUSIC]->isPlaying()) { 
 
