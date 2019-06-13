@@ -63,12 +63,12 @@ NButton buttons[NUM_BUTTONS] = { {0, buttonPins[0], true, true}, {1, buttonPins[
                                  {2, buttonPins[2], true, true}, {3, buttonPins[3], true, true} };
 int buttonDebounce[NUM_BUTTONS] = {250, 100, 1000, 1000};
     
-#define BUTTON_LIGHT_TORPEDO  2
-#define BUTTON_LIGHT_LASER    5
+#define BUTTON_LIGHT_MUSIC  2
+#define BUTTON_LIGHT_WEAPONA    5
 #define BUTTON_LIGHT_SPEECH   29
 #define BUTTON_LIGHT_ENGINE   30
 
-uint8_t buttonLightPins[NUM_BUTTONS] = { BUTTON_LIGHT_TORPEDO, BUTTON_LIGHT_LASER,
+uint8_t buttonLightPins[NUM_BUTTONS] = { BUTTON_LIGHT_MUSIC, BUTTON_LIGHT_WEAPONA,
                                          BUTTON_LIGHT_SPEECH, BUTTON_LIGHT_ENGINE };
 
 int keyHeld = 0;
@@ -213,17 +213,19 @@ KeyboardController keyboard1(myusb);
 
 #define ACTION_DO_NOT_USE             0 //just putting this here as a reminder to not use it :)
 
-#define ACTION_TORPEDO               1
-#define ACTION_LASER                 2
-#define ACTION_KYLO                  3
+#define ACTION_WEAPONB               1
+#define ACTION_WEAPONA               2
+#define ACTION_SPEECH                3
 #define ACTION_ENGINE                4
 #define ACTION_BGM_TOGGLE            5          //BGM = BACKGROUND MUSIC
-#define ACTION_ENGINE_TOGGLE         6
-#define ACTION_TORPEDO_CHARGE_START  7
-#define ACTION_TORPEDO_CHARGE_DURING 8
-#define ACTION_TORPEDO_CHARGE_STOP   9
-#define ACTION_JARJAR                10
-#define ACTION_FLASH_BUTTON          11
+#define ACTION_BGM_NEXT              6
+#define ACTION_ENGINE_TOGGLE         7
+#define ACTION_TORPEDO_CHARGE_START  8
+#define ACTION_TORPEDO_CHARGE_DURING 9
+#define ACTION_TORPEDO_CHARGE_STOP   10
+#define ACTION_JARJAR                11
+#define ACTION_FLASH_BUTTON          12
+
 
 
 #define ACTION_PLAY_WAV               20
@@ -244,25 +246,24 @@ unsigned long lastActionTime[MAX_ACTION_ID];
 
 int ActionMap[][3] = {
   //src, key, action
-  {SOURCE_KEY, 214, ACTION_TORPEDO},            //remote right
-  {SOURCE_KEY, 211, ACTION_LASER},              //remote left
-  {SOURCE_KEY,  27, ACTION_KYLO},               //remote up
+  {SOURCE_KEY, 214, ACTION_WEAPONB},            //remote right
+  {SOURCE_KEY, 211, ACTION_WEAPONA},              //remote left
+  {SOURCE_KEY,  27, ACTION_SPEECH},               //remote up
   {SOURCE_KEY,  98, ACTION_ENGINE},             //remote down
   {SOURCE_KEY, 198, ACTION_BGM_TOGGLE},         //remote play
   
-  {SOURCE_BUTTON, 0, ACTION_TORPEDO},            //blue button
-  {SOURCE_BTN_DBLCLICK, 0, ACTION_TORPEDO}, 
-  {SOURCE_BTN_LONGPRESS_START, 0, ACTION_TORPEDO_CHARGE_START},            
-  {SOURCE_BTN_LONGPRESS_DURING, 0, ACTION_TORPEDO_CHARGE_DURING},            
-  {SOURCE_BTN_LONGPRESS_STOP, 0, ACTION_TORPEDO_CHARGE_STOP},            
+  {SOURCE_BUTTON, 0, ACTION_BGM_NEXT},              //blue button
+  {SOURCE_BTN_DBLCLICK, 0, ACTION_BGM_TOGGLE},              
+  {SOURCE_BTN_LONGPRESS_DURING, 0, ACTION_FLASH_BUTTON},            
+  {SOURCE_BTN_LONGPRESS_STOP, 0, ACTION_BGM_TOGGLE},
   
-  {SOURCE_BUTTON, 1, ACTION_LASER},              //green button
-  {SOURCE_BTN_DBLCLICK, 1, ACTION_LASER},              
-  {SOURCE_BTN_LONGPRESS_DURING, 1, ACTION_FLASH_BUTTON},            
-  {SOURCE_BTN_LONGPRESS_STOP, 1, ACTION_BGM_TOGGLE},
+  {SOURCE_BUTTON, 1, ACTION_WEAPONA},              //green button
+  //{SOURCE_BTN_DBLCLICK, 1, ACTION_WEAPONB},              
+  //{SOURCE_BTN_LONGPRESS_DURING, 1, ACTION_FLASH_BUTTON},            
+  //{SOURCE_BTN_LONGPRESS_STOP, 1, ACTION_WEAPONB},
   
-  {SOURCE_BUTTON, 2, ACTION_KYLO},               //white button
-  {SOURCE_BTN_DBLCLICK, 2, ACTION_KYLO},               
+  {SOURCE_BUTTON, 2, ACTION_SPEECH},               //yellow button
+  {SOURCE_BTN_DBLCLICK, 2, ACTION_SPEECH},               
   {SOURCE_BTN_LONGPRESS_DURING, 2, ACTION_FLASH_BUTTON},            
   {SOURCE_BTN_LONGPRESS_STOP, 2, ACTION_JARJAR},            
   
@@ -295,12 +296,12 @@ void setup() {
   mixer2.gain(2, LEVEL_CHANNEL2);
 
   //these mixers feed the peak analysis
-  mixer3.gain(0, 0); //peak1 (bgm)
-  mixer3.gain(1, 0);
+  mixer3.gain(0, .8); //peak1 (bgm)
+  mixer3.gain(1, .8);
   mixer4.gain(1,.3); //peak2 (engine)
   mixer4.gain(1,.3);
-  mixer5.gain(1, 0); //peak3
-  mixer5.gain(1, 0);
+  mixer5.gain(1, 1); //peak3
+  mixer5.gain(1, 1);
 
   //setup SD card
   SPI.setMOSI(SDCARD_MOSI_PIN);
@@ -339,7 +340,7 @@ void setup() {
   }
  
   //startup button light animation
-  int btnDelay = 50;
+  int btnDelay = 200;
   int absBtn = 0;
   int numCycles = 10;
   for (int cycle = 0; cycle < numCycles; cycle++) { 
@@ -437,38 +438,46 @@ void loop() {
     }
     else fill_solid(engineLEDS, ENGINE_NUM_LEDS, CRGB(random(16,24),0,0));
 
+    if (peakAnalyzers[CHANNEL_MUSIC]->available()) {
+      float peak = peakAnalyzers[CHANNEL_MUSIC]->read();
+      if (debugOptions[DEBUG_PEAK]) Serial.printf("Music Peak: %f \n", peak);
+      int peakbrt = map(peak,0,1,0,255);
+      analogWrite(BUTTON_LIGHT_MUSIC, peakbrt);     
+    }
+    else analogWrite(BUTTON_LIGHT_MUSIC, 0);  
+
     //if weapons sounds are playing, then peak the appropriate button
     if (channels[CHANNEL_WEAPON]->isPlaying() ) {
       if (peakAnalyzers[CHANNEL_WEAPON]->available()) {
         float peak = peakAnalyzers[CHANNEL_WEAPON]->read();
         if (debugOptions[DEBUG_PEAK]) Serial.printf("Weapon Peak: %f \n", peak);
         int peakbrt = map(peak,0,1,0,255);
-        unsigned long k = max(lastActionTime[ACTION_KYLO], lastActionTime[ACTION_JARJAR]);
-        unsigned long l = lastActionTime[ACTION_LASER];
-        unsigned long t = max(lastActionTime[ACTION_TORPEDO], lastActionTime[ACTION_TORPEDO_CHARGE_START]);
+        unsigned long k = max(lastActionTime[ACTION_SPEECH], lastActionTime[ACTION_JARJAR]);
+        unsigned long l = lastActionTime[ACTION_WEAPONA];
+        unsigned long t = max(lastActionTime[ACTION_WEAPONB], lastActionTime[ACTION_TORPEDO_CHARGE_START]);
                       t = max(t, lastActionTime[ACTION_TORPEDO_CHARGE_DURING]);
                       t = max(t, lastActionTime[ACTION_TORPEDO_CHARGE_STOP]);
                       
 
         if ( k > l && k > t) {
-          //kylo was most recent
+          //SPEECH was most recent
           analogWrite(BUTTON_LIGHT_SPEECH, peakbrt);
-          analogWrite(BUTTON_LIGHT_LASER, LOW); 
-          analogWrite(BUTTON_LIGHT_TORPEDO, LOW);
+          analogWrite(BUTTON_LIGHT_WEAPONA, LOW); 
+          //analogWrite(BUTTON_LIGHT_TORPEDO, LOW);
         }
         else if ( l > k && l > t) {
-          analogWrite(BUTTON_LIGHT_LASER, peakbrt);
-          analogWrite(BUTTON_LIGHT_TORPEDO, LOW);   
+          analogWrite(BUTTON_LIGHT_WEAPONA, peakbrt);
+          //analogWrite(BUTTON_LIGHT_TORPEDO, LOW);   
         }
         else if ( t > k && t > l) {
-          analogWrite(BUTTON_LIGHT_TORPEDO, peakbrt);
-          analogWrite(BUTTON_LIGHT_LASER, LOW);
+          //analogWrite(BUTTON_LIGHT_TORPEDO, peakbrt);
+          analogWrite(BUTTON_LIGHT_WEAPONA, LOW);
         }
       }   //end if peak available()
     } //end if isPlaying
     else {
-      analogWrite(BUTTON_LIGHT_LASER, LOW); 
-      analogWrite(BUTTON_LIGHT_TORPEDO, LOW); 
+      analogWrite(BUTTON_LIGHT_WEAPONA, LOW); 
+      //analogWrite(BUTTON_LIGHT_TORPEDO, LOW); 
       analogWrite(BUTTON_LIGHT_SPEECH, LOW);
     }
     
@@ -488,15 +497,17 @@ void processAction (int action, int src, int key, int data) {
   
   switch (action) {
    
-      case ACTION_TORPEDO:                actionTorpedo();          break;
-      case ACTION_LASER:                  actionLaser();            break;                                                                         
-      case ACTION_KYLO:                   actionKylo();             break;                                        
+      case ACTION_WEAPONB:                actionWeaponB();          break;
+      case ACTION_WEAPONA:                actionWeaponA();            break;                                                                         
+      case ACTION_SPEECH:                 actionSpeech();             break;                                        
       case ACTION_ENGINE:                 actionEngine();           break;
       case ACTION_ENGINE_TOGGLE:          actionEngineToggle();     break;
       case ACTION_BGM_TOGGLE:             actionBGMToggle();        break;
-      case ACTION_TORPEDO_CHARGE_START:   actionTorpedoCharge(0);   break;
-      case ACTION_TORPEDO_CHARGE_DURING:  actionTorpedoCharge(1);   break;  
-      case ACTION_TORPEDO_CHARGE_STOP:    actionTorpedoCharge(2);   break; 
+      case ACTION_BGM_NEXT:               actionBGMNext();        break;
+      
+      //case ACTION_TORPEDO_CHARGE_START:   actionTorpedoCharge(0);   break;
+      //case ACTION_TORPEDO_CHARGE_DURING:  actionTorpedoCharge(1);   break;  
+      //case ACTION_TORPEDO_CHARGE_STOP:    actionTorpedoCharge(2);   break; 
       case ACTION_FLASH_BUTTON:           actionFlashButton(key);   break; 
    
   }
@@ -517,10 +528,10 @@ void actionFlashButton(int btn) {
   }
 }
 
-void actionTorpedo() {
-  if (debugOptions[DEBUG_ACTION]) Serial.println("Torpedo away!");
+void actionWeaponB() {
+  if (debugOptions[DEBUG_ACTION]) Serial.println("actionWeaponB()");
 
-  //play random TORPEDO#.WAV
+  //play random WPNB#.WAV
   String fn = "WPNB";
   fn = fn + random (1, NUM_WEAPONB_WAVS + 1) + ".WAV";
   queueWAV( CHANNEL_WEAPON, fn);
@@ -530,6 +541,7 @@ void actionTorpedo() {
   torpedoFrame=0;
 }
 
+/*
 void actionTorpedoCharge(int state) {
  if (debugOptions[DEBUG_ACTION]) {
   Serial.printf("Torpedo charge: %d\n", state); 
@@ -539,13 +551,13 @@ void actionTorpedoCharge(int state) {
  if (state == 2) actionTorpedo();
  
 }
+*/
+void actionWeaponA() {
+  if (debugOptions[DEBUG_ACTION]) Serial.println("actionWeaponA()");
+  //weapon sound
+  //weapon LED animation
 
-void actionLaser() {
-  if (debugOptions[DEBUG_ACTION]) Serial.println("Fire the LAZORS!");
-  //laser sound
-  //laser LED animation
-
-  //play random LASER#.WAV
+  //play random WPNA#.WAV
   String fn = "WPNA";
   fn = fn + random (1, NUM_WEAPONA_WAVS + 1) + ".WAV";
   queueWAV( CHANNEL_WEAPON, fn);
@@ -553,10 +565,10 @@ void actionLaser() {
   laserFrame=0; 
 }
 
-void actionKylo() {
-  if (debugOptions[DEBUG_ACTION]) Serial.println("Kylo was here!");
+void actionSpeech() {
+  if (debugOptions[DEBUG_ACTION]) Serial.println("actionSpeech()");
 
-    //play random KYLO#.WAV
+    //play random SPEECH#.WAV
     String fn = "VOICE";
     fn = fn + random (1, NUM_VOICE_WAVS + 1) + ".WAV";
     queueWAV( CHANNEL_SPEECH, fn);
@@ -626,6 +638,16 @@ void actionBGMToggle() {
   bgmStatus = !bgmStatus;
   if (debugOptions[DEBUG_ACTION]) Serial.printf("Background music status = %s\n", bgmStatus?"ON":"OFF");
   if (!bgmStatus) channels[CHANNEL_MUSIC]->stop(); 
+}
+
+/*
+ * actionBGMNext() is used to queue the next Background Music track
+ * 
+ */
+void actionBGMNext() {
+  if (debugOptions[DEBUG_ACTION]) Serial.println("actionBGMNext()");
+  bgmStatus = 1;
+  channels[CHANNEL_MUSIC]->stop(); //the metro should see it is stopped, but enabled and queue the next track..  
 }
 
 /*
