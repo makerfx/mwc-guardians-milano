@@ -26,7 +26,6 @@
 // create weapon animation
 // Drop SFX / Music / Engine for voice
 // Add more texture to startup? Maybe the sound then a specific voice clip?
-// add some nature of engine rumble / idle sound
 // add an easter egg, maybe random I AM GROOT?
 // Remove the "torpedo charge" concept - does not apply here 
 // make engine LEDs "breathe" when no audio (have the engine button follow?)
