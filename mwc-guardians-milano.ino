@@ -300,10 +300,10 @@ void setup() {
   //these mixers feed the peak analysis
   mixer3.gain(0, .8); //peak1 (bgm)
   mixer3.gain(1, .8);
-  mixer4.gain(1,.3); //peak2 (engine)
-  mixer4.gain(1,.3);
-  mixer5.gain(1, 1); //peak3
-  mixer5.gain(1, 1);
+  mixer4.gain(1, .8); //peak2 (engine)
+  mixer4.gain(1, .8);
+  mixer5.gain(1,  1); //peak3
+  mixer5.gain(1,  1);
 
   //setup SD card
   SPI.setMOSI(SDCARD_MOSI_PIN);
