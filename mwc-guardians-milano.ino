@@ -21,7 +21,6 @@
 
 //TODO 
 // create weapon animation
-// Drop SFX / Music / Engine for voice
 // Add more texture to startup? Maybe the sound then a specific voice clip?
 // add an easter egg, maybe random I AM GROOT?
 // Remove the "torpedo charge" concept - does not apply here 
@@ -166,9 +165,13 @@ byte laserAnimation[LASER_ANIMATION_HEIGHT * LASER_ANIMATION_WIDTH * 3];
 #define TORPEDO_ANIMATION_WIDTH  16
 byte torpedoAnimation[TORPEDO_ANIMATION_HEIGHT * TORPEDO_ANIMATION_WIDTH * 3];
 
-#define ENGINE_NUM_LEDS 145 
+#define ENGINE_NUM_LEDS 141 
 #define ENGINE_DATA_PIN 33
 CRGB engineLEDS[ENGINE_NUM_LEDS]; 
+
+#define SPEECH_NUM_LEDS 41 
+#define SPEECH_DATA_PIN 26
+CRGB speechLEDS[SPEECH_NUM_LEDS]; 
 
 //WARNING - ADJUSTING THIS SETTING COULD LEAD TO 
 //EXCESS CURRENT DRAW AND POSSIBLE SYSTEM DAMAGE
@@ -344,7 +347,9 @@ void setup() {
   fn = fn + random (1, NUM_STARTUP_WAVS + 1) + ".WAV";
   playWAV( CHANNEL_MUSIC, fn);
 
- //startup button light animation
+/* 
+ *  
+  //startup button light animation
   int btnDelay = 200;
   int absBtn = 0;
   //int numCycles = 10;
@@ -362,11 +367,14 @@ void setup() {
     } 
   } while (channels[CHANNEL_MUSIC]->isPlaying());
 
+*/
   //Setup LEDS
   
   //Validate the LED color order!
   LEDS.addLeds<WS2812SERIAL,  LASER_DATA_PIN,   BRG>(laserLEDS,   LASER_NUM_LEDS);
   LEDS.addLeds<WS2812SERIAL,  ENGINE_DATA_PIN,  BRG>(engineLEDS,  ENGINE_NUM_LEDS);
+  LEDS.addLeds<WS2812SERIAL,  SPEECH_DATA_PIN,  BRG>(speechLEDS,  SPEECH_NUM_LEDS);
+
     
   LEDS.setBrightness(DEFAULT_BRIGHTNESS);
 
@@ -374,6 +382,8 @@ void setup() {
   FastLED.clear();
   laserLEDS[0] = CRGB(255,255,255);
   engineLEDS[0] = CRGB(255,255,255);
+  speechLEDS[0] = CRGB(255,255,255);
+  
   FastLED.show();
 
   //Setup USB Host
@@ -469,7 +479,7 @@ void loop() {
       analogWrite(BUTTON_LIGHT_MUSIC, peakbrt);     
     }
     else analogWrite(BUTTON_LIGHT_MUSIC, 0);  
-
+     
     //if weapons sounds are playing, then peak the appropriate button
     if (channels[CHANNEL_WEAPON]->isPlaying() ) {
       if (peakAnalyzers[CHANNEL_WEAPON]->available()) {
@@ -487,22 +497,29 @@ void loop() {
           //SPEECH was most recent
           analogWrite(BUTTON_LIGHT_SPEECH, peakbrt);
           analogWrite(BUTTON_LIGHT_WEAPONA, LOW); 
+          fill_solid(speechLEDS, SPEECH_NUM_LEDS, CRGB(peakbrt,peakbrt*.8,0));
+          
           //analogWrite(BUTTON_LIGHT_TORPEDO, LOW);
         }
         else if ( l > k && l > t) {
           analogWrite(BUTTON_LIGHT_WEAPONA, peakbrt);
+          fill_solid(speechLEDS, SPEECH_NUM_LEDS, CRGB(0,0,0));
           //analogWrite(BUTTON_LIGHT_TORPEDO, LOW);   
         }
         else if ( t > k && t > l) {
           //analogWrite(BUTTON_LIGHT_TORPEDO, peakbrt);
           analogWrite(BUTTON_LIGHT_WEAPONA, LOW);
+          fill_solid(speechLEDS, SPEECH_NUM_LEDS, CRGB(0,0,0));
         }
+        
       }   //end if peak available()
+      else fill_solid(speechLEDS, SPEECH_NUM_LEDS, CRGB(0,0,0));
     } //end if isPlaying
     else {
       analogWrite(BUTTON_LIGHT_WEAPONA, LOW); 
       //analogWrite(BUTTON_LIGHT_TORPEDO, LOW); 
       analogWrite(BUTTON_LIGHT_SPEECH, LOW);
+      fill_solid(speechLEDS, SPEECH_NUM_LEDS, CRGB(0,0,0));
     }
     
   bool rLaser = animate(&laserFrame, LASER_ANIMATION_HEIGHT, laserAnimation, LASER_NUM_LEDS, laserLEDS);
