@@ -37,3 +37,15 @@ LEDs
 
 Speakers
 - Grabbed some old yellowed computer speakers from Chatt*Lab, gutted them, bandsawed the case to 1/2 size, made a laser-cut bottom panel & expoxied them back together
+
+
+Supplies we used on-site
+- Heat Shrink Tubing
+- Solder / Flux
+- Epoxy (mounting wood to foam, sealing hacked computer speakers)
+- Hot Glue (attaching LEDs to wood, glueing down wires)
+
+Tools we all wish we owned:
+- Bill's $100 Motion Controlled Screwdriver ($100): https://www.adafruit.com/product/3856
+
+
