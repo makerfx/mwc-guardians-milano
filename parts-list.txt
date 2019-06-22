@@ -1,34 +1,38 @@
 Main Controller
-- Magic Wheelchair "Motherboard" v.9 from MakerFX / 2-Pi Labs
-- Teensy 3.6 ($30): https://www.pjrc.com/store/teensy36.html (also available on amazon)
-- Teensy Audio board ($14): https://www.pjrc.com/store/teensy3_audio.html
-- Header pins for protoboards ($13 kit): https://smile.amazon.com/gp/product/B07CWSXY7P/
+- Magic Wheelchair "Motherboard" v.9 from MakerFX / 2-Pi Labs 
+  - 12v -> 5v LM2596 Power Regulator ($1.25): https://www.amazon.com/gp/product/B07RLR8PBF
+  - Teensy 3.6 ($30): https://www.pjrc.com/store/teensy36.html (also available on amazon)
+  - USB Host Cable for Teensy ($8 for 2): https://www.amazon.com/gp/product/B06Y5M6JTV
+  - Teensy Audio board ($14): https://www.pjrc.com/store/teensy3_audio.html
+  - Header pins for protoboards ($13 kit): https://smile.amazon.com/gp/product/B07CWSXY7P/
+
 - Ground Loop isolator (for audio input) ($8): https://smile.amazon.com/gp/product/B01JUOWB2Q/
-- 3.5mm Headphone cable ($X): 
-- AMP ($X): 
-- 12v -> 5v Power Regulator ($X)
-- BlackWeb USB Presentation Remote ($22): https://www.walmart.com/ip/BlackWeb-2-4GHz-Wireless-Presenter-82-ft-Range/720596584
-- USB Host Cable for Teensy ($8 for 2): https://www.amazon.com/gp/product/B06Y5M6JTV
-- Main power switch: ?
+- 3.5mm Headphone cable ($3.25): https://www.amazon.com/gp/product/B01L0YPVOY 
+- AMP DROK 15x2 amp ($9): https://www.amazon.com/gp/product/B00C4MT274
+    (Ian note: I found this a bit underpowered, will be testing a 30x2)
+
+- AmazonBasics Wireless Presenter Remote Pointer($24): https://www.amazon.com/AmazonBasics-P-001-Wireless-Presenter/dp/B01FV0FAL2
+- Main power switch ($2.50): Donated item similar to: https://www.amazon.com/Nilight-Rocker-Toggle-Switch-Waterproof/dp/B078KBC5VH
 - LED extension cable - 18 gauge 4 conductor: https://smile.amazon.com/gp/product/B0154H7BLE
-- LED extension cable - (3 conductor)
+- Male/Female LED connector: https://smile.amazon.com/dp/B00NBSH4CA/
 
 Power
-- 12v7 SLA Battery
-- SLA Charger
-- XT Connectors
-- Cable
-- Fuse 
+- 12v 7ah SLA Battery https://smile.amazon.com/dp/B003S1RQ2S/
+- SLA battery charger https://smile.amazon.com/dp/B001G8AIO8/
+- XT60 Battery connectors https://smile.amazon.com/dp/B01E9HM7NC/
+- Main Battery cable https://smile.amazon.com/dp/B01ABOPMEI/
+- 12v Fuse: https://smile.amazon.com/dp/B018W2T7XS/
+
 
 Case
 - Harbor Freight 11-1/2 X 7-1/2 X 4-1/2 Aluminum Case ($14): https://www.harborfreight.com/11-12-x-7-12-x-4-12-aluminum-case-69316.html
-- Giant Illuminated Arcade Buttons ($XX):
+- 4 Giant Illuminated Arcade Buttons ($13): https://www.amazon.com/gp/product/B01M7PNCO9
 - Scrap of Cat5 Cable ($FREE)
 - Scrap USB 4-conductor cable ($FREE)
 
 LEDs
-- 96 LED Concentric Rings($XX): 
-- WS2812 Weatherproof Strip LEDs ($XX): 
+- 96 LED Concentric Rings($25): https://www.amazon.com/gp/product/B07437X7SL 
+- WS2812 Weatherproof Strip LEDs ($35): Donated item similar to: https://www.amazon.com/ALITOVE-Individually-Addressable-Flexible-Waterproof/dp/B018X04ES2
 
 Speakers
-- ???
+- Grabbed some old yellowed computer speakers from Chatt*Lab, gutted them, bandsawed the case to 1/2 size, made a laser-cut bottom panel & expoxied them back together
