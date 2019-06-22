@@ -142,6 +142,7 @@ AudioAnalyzePeak  *peakAnalyzers[NUM_CHANNELS] = { &peak1, &peak2, &peak3 };
 #define NUM_IDLE_WAVS         2     //format IDLE#.WAV
 #define NUM_VOICE_WAVS        4     //format VOICE#.WAV
 #define NUM_STARTUP_WAVS      2     //format START#.WAV
+#define NUM_GROOT_WAVS        16    //format GROOT#.WAV
 
 
 
@@ -151,8 +152,8 @@ AudioAnalyzePeak  *peakAnalyzers[NUM_CHANNELS] = { &peak1, &peak2, &peak3 };
 #define USE_WS2812SERIAL
 #include <FastLED.h>
 
-#define LASER_NUM_LEDS 16         //will be 16 
-#define LASER_DATA_PIN 32
+#define LASER_NUM_LEDS 50          
+#define LASER_DATA_PIN 26
 CRGB laserLEDS[LASER_NUM_LEDS];
 int laserFrame = 9999;
 int torpedoFrame = 9999;
@@ -166,11 +167,11 @@ byte laserAnimation[LASER_ANIMATION_HEIGHT * LASER_ANIMATION_WIDTH * 3];
 byte torpedoAnimation[TORPEDO_ANIMATION_HEIGHT * TORPEDO_ANIMATION_WIDTH * 3];
 
 #define ENGINE_NUM_LEDS 141 
-#define ENGINE_DATA_PIN 33
+#define ENGINE_DATA_PIN 8
 CRGB engineLEDS[ENGINE_NUM_LEDS]; 
 
 #define SPEECH_NUM_LEDS 41 
-#define SPEECH_DATA_PIN 26
+#define SPEECH_DATA_PIN 32
 CRGB speechLEDS[SPEECH_NUM_LEDS]; 
 
 //WARNING - ADJUSTING THIS SETTING COULD LEAD TO 
@@ -223,7 +224,7 @@ KeyboardController keyboard1(myusb);
 #define ACTION_TORPEDO_CHARGE_START  8
 #define ACTION_TORPEDO_CHARGE_DURING 9
 #define ACTION_TORPEDO_CHARGE_STOP   10
-#define ACTION_JARJAR                11
+#define ACTION_GROOT                 11
 #define ACTION_FLASH_BUTTON          12
 
 
@@ -265,7 +266,7 @@ int ActionMap[][3] = {
   {SOURCE_BUTTON, 3, ACTION_SPEECH},               //yellow button
   {SOURCE_BTN_DBLCLICK, 3, ACTION_SPEECH},               
   {SOURCE_BTN_LONGPRESS_DURING, 3, ACTION_FLASH_BUTTON},            
-  {SOURCE_BTN_LONGPRESS_STOP, 3, ACTION_JARJAR},            
+  {SOURCE_BTN_LONGPRESS_STOP, 3, ACTION_GROOT},            
   
   {SOURCE_BUTTON, 2, ACTION_ENGINE},             //red button
   {SOURCE_BTN_DBLCLICK, 2, ACTION_ENGINE},                        
@@ -375,6 +376,9 @@ void setup() {
   LEDS.addLeds<WS2812SERIAL,  ENGINE_DATA_PIN,  BRG>(engineLEDS,  ENGINE_NUM_LEDS);
   LEDS.addLeds<WS2812SERIAL,  SPEECH_DATA_PIN,  BRG>(speechLEDS,  SPEECH_NUM_LEDS);
 
+
+//FastLED.addLeds<APA102, DATA_PIN, CLOCK_PIN, RGB, DATA_RATE_MHZ(12)>(leds, NUM_LEDS);
+ 
     
   LEDS.setBrightness(DEFAULT_BRIGHTNESS);
 
@@ -486,7 +490,7 @@ void loop() {
         float peak = peakAnalyzers[CHANNEL_WEAPON]->read();
         if (debugOptions[DEBUG_PEAK]) Serial.printf("Weapon Peak: %f \n", peak);
         int peakbrt = map(peak,0,1,0,255);
-        unsigned long k = max(lastActionTime[ACTION_SPEECH], lastActionTime[ACTION_JARJAR]);
+        unsigned long k = max(lastActionTime[ACTION_SPEECH], lastActionTime[ACTION_GROOT]);
         unsigned long l = lastActionTime[ACTION_WEAPONA];
         unsigned long t = max(lastActionTime[ACTION_WEAPONB], lastActionTime[ACTION_TORPEDO_CHARGE_START]);
                       t = max(t, lastActionTime[ACTION_TORPEDO_CHARGE_DURING]);
@@ -525,7 +529,7 @@ void loop() {
   bool rLaser = animate(&laserFrame, LASER_ANIMATION_HEIGHT, laserAnimation, LASER_NUM_LEDS, laserLEDS);
   bool rTorpedo = animate(&torpedoFrame, TORPEDO_ANIMATION_HEIGHT, torpedoAnimation, LASER_NUM_LEDS, laserLEDS);
   if (!rLaser && !rTorpedo) { 
-    fill_solid(laserLEDS, LASER_NUM_LEDS, CRGB(0,0,0)); 
+    fill_solid(laserLEDS, LASER_NUM_LEDS, CRGB(0,0,255)); 
   }
   
     FastLED.show();
@@ -545,7 +549,7 @@ void processAction (int action, int src, int key, int data) {
       case ACTION_IDLE_TOGGLE:            actionIdleToggle();     break;
       case ACTION_BGM_TOGGLE:             actionBGMToggle();        break;
       case ACTION_BGM_NEXT:               actionBGMNext();        break;
-      
+      case ACTION_GROOT:                  actionGroot();          break;
       //case ACTION_TORPEDO_CHARGE_START:   actionTorpedoCharge(0);   break;
       //case ACTION_TORPEDO_CHARGE_DURING:  actionTorpedoCharge(1);   break;  
       //case ACTION_TORPEDO_CHARGE_STOP:    actionTorpedoCharge(2);   break; 
@@ -568,6 +572,17 @@ void actionFlashButton(int btn) {
     digitalWrite(buttonLightPins[btn], LOW);
   }
 }
+
+
+void actionGroot() {
+  if (debugOptions[DEBUG_ACTION]) Serial.println("actionGroot()");
+
+  //play random GROOT#.WAV
+  String fn = "GROOT";
+  fn = fn + random (1, NUM_GROOT_WAVS + 1) + ".WAV";
+  queueWAV( CHANNEL_SPEECH, fn);
+}
+
 
 void actionWeaponB() {
   if (debugOptions[DEBUG_ACTION]) Serial.println("actionWeaponB()");
