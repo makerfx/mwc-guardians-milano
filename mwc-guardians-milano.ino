@@ -198,6 +198,7 @@ int   bgmTrack = 0;             //Starting track (requires N-1) for background m
 
 USBHost myusb;
 USBHub hub1(myusb);
+USBHIDParser hid1(myusb);
 KeyboardController keyboard1(myusb);
 
 // Use these with the Teensy 3.5 & 3.6 SD card
@@ -395,6 +396,8 @@ void setup() {
   myusb.begin();
   keyboard1.attachPress(OnPress);
   keyboard1.attachRelease(OnRelease);
+  keyboard1.attachExtrasPress(OnHIDExtrasPress);
+  keyboard1.attachExtrasRelease(OnHIDExtrasRelease);
   
   delay(1000);
   Serial.println("Setup Complete.");
@@ -922,7 +925,7 @@ void buttonLongPress(int id) {
 
 /*
  * Input
- * onPress() - this function is called by the USB Host HID event when a key is pressed
+ * OnPress() - this function is called by the USB Host HID event when a key is pressed
  * 
  */
 void OnPress(int key)
@@ -936,7 +939,7 @@ void OnPress(int key)
 
 /*
  * Input
- * onRelease() - this function is called by the USB Host HID event when a key is released
+ * OnRelease() - this function is called by the USB Host HID event when a key is released
  * 
  */
 void OnRelease(int key)
@@ -953,6 +956,28 @@ void OnRelease(int key)
 
   mapAction(SOURCE_KEY, key, duration);   
 }
+
+
+/*
+ * Input
+ * OnHIDExtrasPress() - this function is called by the USB Host HID event when a MULTIMEDIA key is pressed
+ * 
+ */
+void OnHIDExtrasPress(uint32_t top, uint16_t key) 
+{
+   OnPress(key);
+}
+
+/*
+ * Input
+ * OnHIDExtrasReleased() - this function is called by the USB Host HID event when a MULTIMEDIA key is released
+ * 
+ */
+void OnHIDExtrasRelease(uint32_t top, uint16_t key) 
+{
+  OnRelease(key);
+}
+
 
 /* 
  *  Action
