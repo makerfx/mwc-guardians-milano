@@ -125,7 +125,10 @@ AudioControlSGTL5000     sgtl5000_1;     //xy=106,55
 #define LEVEL_CHANNEL1    .3
 #define LEVEL_CHANNEL2    .8  
 
-#define MAIN_VOLUME       .8    //change this to reduce clipping in the main amp
+#define STARTING_VOLUME       .4 //change this to reduce clipping in the main amp
+#define MAX_VOLUME            1.0 
+#define MIN_VOLUME            .2 
+#define VOLUME_INCREMENT      .1 //how much the volume changes when using buttons
 
 //I use this syntax so that I can leave the declarations above which come from the Audio Design tool
 AudioPlaySdWav *channels[NUM_CHANNELS] = { &playSdWav1, &playSdWav2, &playSdWav3 };
@@ -152,8 +155,8 @@ AudioAnalyzePeak  *peakAnalyzers[NUM_CHANNELS] = { &peak1, &peak2, &peak3 };
 #define USE_WS2812SERIAL
 #include <FastLED.h>
 
-#define LASER_NUM_LEDS 50          
-#define LASER_DATA_PIN 26
+#define LASER_NUM_LEDS 24          
+#define LASER_DATA_PIN 32
 CRGB laserLEDS[LASER_NUM_LEDS];
 int laserFrame = 9999;
 int torpedoFrame = 9999;
@@ -166,17 +169,17 @@ byte laserAnimation[LASER_ANIMATION_HEIGHT * LASER_ANIMATION_WIDTH * 3];
 #define TORPEDO_ANIMATION_WIDTH  16
 byte torpedoAnimation[TORPEDO_ANIMATION_HEIGHT * TORPEDO_ANIMATION_WIDTH * 3];
 
-#define ENGINE_NUM_LEDS 141 
+#define ENGINE_NUM_LEDS 64 
 #define ENGINE_DATA_PIN 8
 CRGB engineLEDS[ENGINE_NUM_LEDS]; 
 
-#define SPEECH_NUM_LEDS 41 
-#define SPEECH_DATA_PIN 32
+#define SPEECH_NUM_LEDS 24 
+#define SPEECH_DATA_PIN 26
 CRGB speechLEDS[SPEECH_NUM_LEDS]; 
 
 //WARNING - ADJUSTING THIS SETTING COULD LEAD TO 
 //EXCESS CURRENT DRAW AND POSSIBLE SYSTEM DAMAGE
-#define DEFAULT_BRIGHTNESS 96 //WARNING!!!!!!!!!
+#define DEFAULT_BRIGHTNESS 64 //WARNING!!!!!!!!!
 //DON'T DO IT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
@@ -192,6 +195,7 @@ Metro animationMetro = Metro(17); //approx 60 frames per second
 bool bgmStatus = 0;           //0 = BGM off; 1 = BGM on
 bool idleStatus = 1;        //0 = Engine off; 1 = Engine on
 int   bgmTrack = 0;             //Starting track (requires N-1) for background music 
+float mainVolume = STARTING_VOLUME;
 
 //for USB host functions
 #include "USBHost_t36.h"
@@ -200,6 +204,7 @@ USBHost myusb;
 USBHub hub1(myusb);
 USBHIDParser hid1(myusb);
 KeyboardController keyboard1(myusb);
+
 
 // Use these with the Teensy 3.5 & 3.6 SD card
 #define SDCARD_CS_PIN    BUILTIN_SDCARD
@@ -232,8 +237,10 @@ KeyboardController keyboard1(myusb);
 
 #define ACTION_PLAY_WAV               20
 #define ACTION_PLAY_WAV_RND           21
+#define ACTION_VOLUME_UP                 22
+#define ACTION_VOLUME_DOWN               23
 
-#define MAX_ACTION_ID                21 //change this if you add actions!
+#define MAX_ACTION_ID                23 //change this if you add actions!
 unsigned long lastActionTime[MAX_ACTION_ID]; 
 
 
@@ -244,7 +251,7 @@ unsigned long lastActionTime[MAX_ACTION_ID];
  * 
  */
 
-#define ACTION_MAP_SIZE 18
+#define ACTION_MAP_SIZE 20
 
 int ActionMap[][3] = {
   //src, key, action
@@ -274,7 +281,8 @@ int ActionMap[][3] = {
   {SOURCE_BTN_LONGPRESS_DURING, 2, ACTION_FLASH_BUTTON}, 
   {SOURCE_BTN_LONGPRESS_STOP, 2, ACTION_IDLE_TOGGLE},            
   
-   
+  {SOURCE_KEY, 233, ACTION_VOLUME_UP},            //remote vol+
+  {SOURCE_KEY, 234, ACTION_VOLUME_DOWN},          //remote vol-
 }; //if you change this, don't forget to update the ACTION_MAP_SIZE
 
 void setup() {
@@ -287,7 +295,7 @@ void setup() {
   //setup audio system
   AudioMemory(128);
   sgtl5000_1.enable();
-  sgtl5000_1.volume(0.8);
+  sgtl5000_1.volume(mainVolume);
 
   //set relative volumes by channel
   mixer1.gain(0, LEVEL_CHANNEL0);
@@ -545,18 +553,20 @@ void processAction (int action, int src, int key, int data) {
   
   switch (action) {
    
-      case ACTION_WEAPONB:                actionWeaponB();          break;
+      case ACTION_WEAPONB:                actionWeaponB();            break;
       case ACTION_WEAPONA:                actionWeaponA();            break;                                                                         
       case ACTION_SPEECH:                 actionSpeech();             break;                                        
-      case ACTION_ENGINE:                 actionEngine();           break;
-      case ACTION_IDLE_TOGGLE:            actionIdleToggle();     break;
-      case ACTION_BGM_TOGGLE:             actionBGMToggle();        break;
-      case ACTION_BGM_NEXT:               actionBGMNext();        break;
-      case ACTION_GROOT:                  actionGroot();          break;
+      case ACTION_ENGINE:                 actionEngine();             break;
+      case ACTION_IDLE_TOGGLE:            actionIdleToggle();         break;
+      case ACTION_BGM_TOGGLE:             actionBGMToggle();          break;
+      case ACTION_BGM_NEXT:               actionBGMNext();            break;
+      case ACTION_GROOT:                  actionGroot();              break;
       //case ACTION_TORPEDO_CHARGE_START:   actionTorpedoCharge(0);   break;
       //case ACTION_TORPEDO_CHARGE_DURING:  actionTorpedoCharge(1);   break;  
       //case ACTION_TORPEDO_CHARGE_STOP:    actionTorpedoCharge(2);   break; 
-      case ACTION_FLASH_BUTTON:           actionFlashButton(key);   break; 
+      case ACTION_FLASH_BUTTON:           actionFlashButton(key);     break; 
+      case ACTION_VOLUME_UP:              actionVolumeUp();           break;
+      case ACTION_VOLUME_DOWN :           actionVolumeDown();         break;
    
   }
   
@@ -978,6 +988,46 @@ void OnHIDExtrasRelease(uint32_t top, uint16_t key)
   OnRelease(key);
 }
 
+/*
+ * action
+ * actionVolumeUp() - increase system volume
+ * 
+ */
+void actionVolumeUp() 
+{
+  mainVolume += VOLUME_INCREMENT;
+  updateVolume();
+}
+
+/*
+ * action
+ * actionVolumeDown() - decrease system volume
+ * 
+ */
+void actionVolumeDown() 
+{
+  mainVolume -= VOLUME_INCREMENT;
+  updateVolume();
+}
+
+/*
+ * audio
+ * updateVolume() -  checks min / max vol levels and updates the audio system volume
+ *  
+ */
+void updateVolume() {
+
+  if (mainVolume < MIN_VOLUME) mainVolume = MIN_VOLUME;
+  else if (mainVolume > MAX_VOLUME) mainVolume = MAX_VOLUME;
+ 
+  sgtl5000_1.volume(mainVolume);
+    if (debugOptions[DEBUG_AUDIO]) {
+    Serial.print("System volume now: ");
+    Serial.println(mainVolume);
+  }
+  
+}
+
 
 /* 
  *  Action
@@ -1056,5 +1106,6 @@ void printDebugOptions() {
   }
   Serial.println("\n");       //a little extra padding in the output
 }
- 
+
+
  
